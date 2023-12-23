@@ -26,6 +26,7 @@ DialogueManager="*res://addons/dialogue_manager/dialogue_manager.gd"
 
 general/states=["State", "Events"]
 general/create_lines_for_responses_with_characters=false
+general/expression_source="res://portrait/portrait_info.gd"
 
 [display]
 

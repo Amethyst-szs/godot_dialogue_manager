@@ -9,9 +9,21 @@ signal external_file_requested(path: String, title: String)
 
 const DialogueSyntaxHighlighter = preload("./code_edit_syntax_highlighter.gd")
 
+var ExpressionSourceScript: Script = null
+var ExpressionSource = null
 
 # A link back to the owner MainView
-var main_view
+var main_view:
+	set(value):
+		main_view = value
+		
+		# Setup expression source autocomplete
+		var script_path: String = main_view.DialogueSettings.get_setting("expression_source", "")
+		if script_path.is_empty():
+			return
+		
+		ExpressionSourceScript = load(script_path)
+		ExpressionSource = ExpressionSourceScript.new()
 
 # Theme overrides for syntax highlighting, etc
 var theme_overrides: Dictionary:
@@ -168,6 +180,41 @@ func _request_code_completion(force: bool) -> void:
 			update_code_completion_options(true)
 		else:
 			cancel_code_completion()
+	
+	# Ensure we have a copy of the expression source script for autocomplete
+	if not ExpressionSource:
+		return
+	
+	# Search if the current line contains a ple or pre tag
+	var expression_auto_type: String = ""
+	if "[#ple=" in current_line: expression_auto_type = "[#ple="
+	if "[#pre=" in current_line: expression_auto_type = "[#pre="
+	if expression_auto_type.is_empty():
+		return
+	
+	# Find that tag in the line, and compare the user cursor against the tag
+	var expression_index: int = current_line.find(expression_auto_type) + 6
+	var tag_end_index: int = current_line.find("]", expression_index - 1)
+	if cursor.x >= expression_index and cursor.x <= tag_end_index:
+		# Get what the user has typed in the tag's value
+		var user_text: String = current_line.substr(expression_index, tag_end_index - expression_index)
+		
+		# Iterate through every character and expression
+		for character in ExpressionSource.PortraitPaths.keys():
+			for expression in ExpressionSource.get(character):
+				# Display name for this autocomplete item
+				var display_name: String = "%s/%s" % [character.to_pascal_case(), expression.to_pascal_case()]
+				
+				# If the user has typed into the tag value, filter by characters or expressions
+				if not user_text.is_empty() and display_name.findn(user_text) == -1:
+					continue
+				
+				# Add to autocomplete list
+				add_code_completion_option(CodeEdit.KIND_ENUM, display_name, expression, theme_overrides.text_color, get_theme_icon("Sprite2D", "EditorIcons"))
+		
+		update_code_completion_options(true)
+	else:
+		cancel_code_completion()
 
 
 func _filter_code_completion_candidates(candidates: Array) -> Array:
@@ -177,12 +224,37 @@ func _filter_code_completion_candidates(candidates: Array) -> Array:
 
 func _confirm_code_completion(replace: bool) -> void:
 	var completion = get_code_completion_option(get_code_completion_selected_index())
+	
+	if completion["kind"] == CodeEdit.KIND_ENUM:
+		begin_complex_operation()
+		
+		var cursor: Vector2 = get_cursor()
+		var line: String = get_line(cursor.y)
+		
+		var backspace_count: int = 0
+		var backspace_search_finished: bool = false
+		while not backspace_search_finished:
+			if line[cursor.x - backspace_count] != "=":
+				backspace_count += 1
+				continue
+			
+			backspace_search_finished = true
+		
+		for i in range(backspace_count - 1):
+			backspace()
+		
+		insert_text_at_caret(completion.insert_text)
+		end_complex_operation()
+		
+		call_deferred("cancel_code_completion")
+		return
+	
 	begin_complex_operation()
 	# Delete any part of the text that we've already typed
 	for i in range(0, completion.display_text.length() - completion.insert_text.length()):
 		backspace()
 	# Insert the whole match
-	insert_text_at_caret(completion.display_text)
+	insert_text_at_caret(completion.insert_text)
 	end_complex_operation()
 
 	# Close the autocomplete menu on the next tick

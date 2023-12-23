@@ -20,6 +20,7 @@ enum PathTarget {
 @onready var characters_translations_button: CheckBox = $Editor/CharactersTranslationsButton
 @onready var wrap_lines_button: Button = $Editor/WrapLinesButton
 @onready var default_csv_locale: LineEdit = $Editor/DefaultCSVLocale
+@onready var expression_source: LineEdit = $Editor/ExpressionSource
 
 # Runtime
 @onready var include_all_responses_button: CheckBox = $Runtime/IncludeAllResponsesButton
@@ -95,6 +96,7 @@ func prepare() -> void:
 	ignore_missing_state_values.set_pressed_no_signal(DialogueSettings.get_setting("ignore_missing_state_values", false))
 	new_template_button.set_pressed_no_signal(DialogueSettings.get_setting("new_with_template", true))
 	default_csv_locale.text = DialogueSettings.get_setting("default_csv_locale", "en")
+	expression_source.text = DialogueSettings.get_setting("expression_source", "en")
 
 	missing_translations_button.set_pressed_no_signal(DialogueSettings.get_setting("missing_translations_are_errors", false))
 	create_lines_for_response_characters.set_pressed_no_signal(DialogueSettings.get_setting("create_lines_for_responses_with_characters", true))
@@ -216,6 +218,10 @@ func _on_custom_test_scene_file_dialog_file_selected(path: String) -> void:
 
 func _on_ignore_missing_state_values_toggled(toggled_on: bool) -> void:
 	DialogueSettings.set_setting("ignore_missing_state_values", toggled_on)
+
+
+func _on_expression_source_text_changed(new_text: String) -> void:
+	DialogueSettings.set_setting("expression_source", new_text)
 
 
 func _on_default_csv_locale_text_changed(new_text: String) -> void:

@@ -46,6 +46,17 @@ text = "Wrap long lines"
 [node name="HSeparator" type="HSeparator" parent="Editor"]
 layout_mode = 2
 
+[node name="ExpressionSourceLabel" type="Label" parent="Editor"]
+layout_mode = 2
+text = "Portrait Expression Source"
+
+[node name="ExpressionSource" type="LineEdit" parent="Editor"]
+layout_mode = 2
+placeholder_text = "res://path/to/script.gd (Must include PortraitPaths enum and matching expression enums)"
+
+[node name="HSeparator2" type="HSeparator" parent="Editor"]
+layout_mode = 2
+
 [node name="DefaultCSVLocaleLabel" type="Label" parent="Editor"]
 layout_mode = 2
 text = "Default CSV Locale"
@@ -173,6 +184,7 @@ filters = PackedStringArray("*.tscn ; Scene")
 [connection signal="toggled" from="Editor/NewTemplateButton" to="." method="_on_sample_template_toggled"]
 [connection signal="toggled" from="Editor/CharactersTranslationsButton" to="." method="_on_characters_translations_button_toggled"]
 [connection signal="toggled" from="Editor/WrapLinesButton" to="." method="_on_wrap_lines_button_toggled"]
+[connection signal="text_changed" from="Editor/ExpressionSource" to="." method="_on_expression_source_text_changed"]
 [connection signal="text_changed" from="Editor/DefaultCSVLocale" to="." method="_on_default_csv_locale_text_changed"]
 [connection signal="toggled" from="Runtime/IncludeAllResponsesButton" to="." method="_on_include_all_responses_button_toggled"]
 [connection signal="toggled" from="Runtime/IgnoreMissingStateValues" to="." method="_on_ignore_missing_state_values_toggled"]

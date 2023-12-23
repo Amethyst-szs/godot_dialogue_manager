@@ -49,12 +49,12 @@ enum TranslationSource {
 @onready var test_button: Button = %TestButton
 @onready var search_button: Button = %SearchButton
 @onready var insert_button: MenuButton = %InsertButton
+@onready var portrait_button: MenuButton = %PortraitButton
 @onready var translations_button: MenuButton = %TranslationsButton
 @onready var settings_button: Button = %SettingsButton
 @onready var support_button: Button = %SupportButton
 @onready var docs_button: Button = %DocsButton
 @onready var version_label: Label = %VersionLabel
-@onready var update_button: Button = %UpdateButton
 
 @onready var search_and_replace := %SearchAndReplace
 
@@ -79,6 +79,7 @@ var current_file_path: String = "":
 			test_button.disabled = true
 			search_button.disabled = true
 			insert_button.disabled = true
+			portrait_button.disabled = true
 			translations_button.disabled = true
 			content.dragger_visibility = SplitContainer.DRAGGER_HIDDEN
 			files_list.hide()
@@ -89,6 +90,7 @@ var current_file_path: String = "":
 			test_button.disabled = false
 			search_button.disabled = false
 			insert_button.disabled = false
+			portrait_button.disabled = false
 			translations_button.disabled = false
 			content.dragger_visibility = SplitContainer.DRAGGER_VISIBLE
 			files_list.show()
@@ -116,21 +118,16 @@ var translation_source: TranslationSource = TranslationSource.Lines
 
 
 func _ready() -> void:
+	if not editor_plugin:
+		return
+	
 	apply_theme()
 
 	# Start with nothing open
 	self.current_file_path = ""
 
 	# Set up the update checker
-	version_label.text = "v%s" % editor_plugin.get_version()
-	update_button.editor_plugin = editor_plugin
-	update_button.on_before_refresh = func on_before_refresh():
-		# Save everything
-		DialogueSettings.set_user_value("just_refreshed", {
-			current_file_path = current_file_path,
-			open_buffers = open_buffers
-		})
-		return true
+	version_label.text = "v%s (Ellie Branch)" % editor_plugin.get_plugin_version()
 
 	# Did we just load from an addon version refresh?
 	var just_refreshed = DialogueSettings.get_user_value("just_refreshed", null)
@@ -143,6 +140,7 @@ func _ready() -> void:
 
 	# Connect menu buttons
 	insert_button.get_popup().id_pressed.connect(_on_insert_button_menu_id_pressed)
+	portrait_button.get_popup().id_pressed.connect(_on_portrait_button_menu_id_pressed)
 	translations_button.get_popup().id_pressed.connect(_on_translations_button_menu_id_pressed)
 
 	code_edit.main_view = self
@@ -198,9 +196,6 @@ func load_from_version_refresh(just_refreshed: Dictionary) -> void:
 		editor_plugin.get_editor_interface().edit_resource(load(just_refreshed.current_file_path))
 	else:
 		editor_plugin.get_editor_interface().set_main_screen_editor("Dialogue")
-
-	updated_dialog.dialog_text = DialogueConstants.translate("update.success").format({ version = update_button.get_version() })
-	updated_dialog.popup_centered()
 
 
 func new_file(path: String, content: String = "") -> void:
@@ -372,6 +367,8 @@ func apply_theme() -> void:
 
 		insert_button.icon = get_theme_icon("RichTextEffect", "EditorIcons")
 		insert_button.text = DialogueConstants.translate("insert")
+		
+		portrait_button.icon = get_theme_icon("Sprite2D", "EditorIcons")
 
 		translations_button.icon = get_theme_icon("Translation", "EditorIcons")
 		translations_button.text = DialogueConstants.translate("translations")
@@ -384,8 +381,6 @@ func apply_theme() -> void:
 
 		docs_button.icon = get_theme_icon("Help", "EditorIcons")
 		docs_button.text = DialogueConstants.translate("docs")
-
-		update_button.apply_theme()
 
 		# Set up the effect menu
 		var popup: PopupMenu = insert_button.get_popup()
@@ -405,7 +400,16 @@ func apply_theme() -> void:
 		popup.add_separator(DialogueConstants.translate("insert.actions"))
 		popup.add_icon_item(get_theme_icon("RichTextEffect", "EditorIcons"), DialogueConstants.translate("insert.jump"), 11)
 		popup.add_icon_item(get_theme_icon("RichTextEffect", "EditorIcons"), DialogueConstants.translate("insert.end_dialogue"), 12)
-
+		
+		popup = portrait_button.get_popup()
+		popup.clear()
+		popup.add_icon_item(get_theme_icon("Sprite2D", "EditorIcons"), "Set Character (Left)", 0)
+		popup.add_icon_item(get_theme_icon("Sprite2D", "EditorIcons"), "Set Character (Right)", 1)
+		popup.add_icon_item(get_theme_icon("Sprite2D", "EditorIcons"), "Set Expression (Left)", 2)
+		popup.add_icon_item(get_theme_icon("Sprite2D", "EditorIcons"), "Set Expression (Right)", 3)
+		popup.add_icon_item(get_theme_icon("Sprite2D", "EditorIcons"), "Hide (Left)", 4)
+		popup.add_icon_item(get_theme_icon("Sprite2D", "EditorIcons"), "Hide (Right)", 5)
+		
 		# Set up the translations menu
 		popup = translations_button.get_popup()
 		popup.clear()
@@ -791,6 +795,22 @@ func _on_insert_button_menu_id_pressed(id: int) -> void:
 			code_edit.insert_text("=> title")
 		12:
 			code_edit.insert_text("=> END")
+
+
+func _on_portrait_button_menu_id_pressed(id: int) -> void:
+	match id:
+		0:
+			code_edit.insert_bbcode("[#plc=ellie]")
+		1:
+			code_edit.insert_bbcode("[#prc=ellie]")
+		2:
+			code_edit.insert_bbcode("[#plc=happy]")
+		3:
+			code_edit.insert_bbcode("[#prc=happy]")
+		4:
+			code_edit.insert_bbcode("[#plh]")
+		5:
+			code_edit.insert_bbcode("[#prh]")
 
 
 func _on_translations_button_menu_id_pressed(id: int) -> void:
