@@ -804,9 +804,9 @@ func _on_portrait_button_menu_id_pressed(id: int) -> void:
 		1:
 			code_edit.insert_bbcode("[#prc=ellie]")
 		2:
-			code_edit.insert_bbcode("[#plc=happy]")
+			code_edit.insert_bbcode("[#ple=happy]")
 		3:
-			code_edit.insert_bbcode("[#prc=happy]")
+			code_edit.insert_bbcode("[#pre=happy]")
 		4:
 			code_edit.insert_bbcode("[#plh]")
 		5:
