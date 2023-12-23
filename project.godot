@@ -44,6 +44,13 @@ enabled=PackedStringArray("res://addons/dialogue_manager/plugin.cfg")
 import/blender/enabled=false
 import/fbx/enabled=false
 
+[input]
+
+interact={
+"deadzone": 0.5,
+"events": []
+}
+
 [internationalization]
 
 locale/translation_remaps={
