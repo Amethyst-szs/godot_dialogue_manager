@@ -391,6 +391,7 @@ func apply_theme() -> void:
 		popup.add_icon_item(get_theme_icon("Time", "EditorIcons"), DialogueConstants.translate("insert.typing_pause"), 3)
 		popup.add_icon_item(get_theme_icon("ViewportSpeed", "EditorIcons"), DialogueConstants.translate("insert.typing_speed_change"), 4)
 		popup.add_icon_item(get_theme_icon("DebugNext", "EditorIcons"), DialogueConstants.translate("insert.auto_advance"), 5)
+		popup.add_icon_item(get_theme_icon("ColorRect", "EditorIcons"), "Background Effects", 13)
 		popup.add_separator(DialogueConstants.translate("insert.templates"))
 		popup.add_icon_item(get_theme_icon("RichTextEffect", "EditorIcons"), DialogueConstants.translate("insert.title"), 6)
 		popup.add_icon_item(get_theme_icon("RichTextEffect", "EditorIcons"), DialogueConstants.translate("insert.dialogue"), 7)
@@ -781,6 +782,8 @@ func _on_insert_button_menu_id_pressed(id: int) -> void:
 			code_edit.insert_bbcode("[speed=0.2]")
 		5:
 			code_edit.insert_bbcode("[next=auto]")
+		13:
+			code_edit.insert_bbcode("[#bg-opacity=0.0][#bg-color=#000000]")
 		6:
 			code_edit.insert_text("~ title")
 		7:
